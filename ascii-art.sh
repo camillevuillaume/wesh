@@ -1,3 +1,5 @@
+#!/bin/bash
+
 code_unknown=(
 	"    .-.      "
 	"     __)     "
@@ -235,88 +237,3 @@ get_weather_glyph() {
 	esac
 }
 
-print_ascii_art() {
-	for line in "${code_unknown[@]}"; do
-		echo -e "$line"
-	done
-
-	for line in "${code_cloudy[@]}"; do
-		echo -e "$line"
-	done
-
-	for line in "${code_fog[@]}"; do
-		echo -e "$line"
-	done
-
-	for line in "${code_heavy_rain[@]}"; do
-		echo -e "$line"
-	done
-
-	for line in "${code_heavy_showers[@]}"; do
-		echo -e "$line"
-	done
-
-	for line in "${code_heavy_snow[@]}"; do
-		echo -e "$line"
-	done
-
-	for line in "${code_heavy_snow_showers[@]}"; do
-		echo -e "$line"
-	done
-
-	for line in "${code_light_rain[@]}"; do
-		echo -e "$line"
-	done
-
-	for line in "${code_light_showers[@]}"; do
-		echo -e "$line"
-	done
-
-	for line in "${code_light_sleet[@]}"; do
-		echo -e "$line"
-	done
-
-	for line in "${code_light_sleet_showers[@]}"; do
-		echo -e "$line"
-	done
-
-	for line in "${code_light_snow[@]}"; do
-		echo -e "$line"
-	done
-
-	for line in "${code_light_snow_showers[@]}"; do
-		echo -e "$line"
-	done
-
-	for line in "${code_partly_cloudy[@]}"; do
-		echo -e "$line"
-	done
-
-	for line in "${code_sunny[@]}"; do
-		echo -e "$line"
-	done
-
-	for line in "${code_thundery_heavy_rain[@]}"; do
-		echo -e "$line"
-	done
-
-	for line in "${code_thundery_showers[@]}"; do
-		echo -e "$line"
-	done
-
-	for line in "${code_thundery_snow_showers[@]}"; do
-		echo -e "$line"
-	done
-
-	for line in "${code_very_cloudy[@]}"; do
-		echo -e "$line"
-	done
-}
-
-# get_weather_glyph "clearsky"
-# get_weather_glyph "heavyrainandthunder"
-# code_name=$(get_weather_code "snowshowersandthunder")
-# declare -n code_array="$code_name"
-# for line in "${code_array[@]}"; do
-#     echo -e "$line"
-# done
