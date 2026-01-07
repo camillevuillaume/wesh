@@ -50,54 +50,13 @@ get_weather() {
 		# Update or append TIMESTAMP
 		grep -q "^TIMESTAMP=" "$CONFIG_FILE" && sed -i "s/^TIMESTAMP=.*/TIMESTAMP=$timestamp/" "$CONFIG_FILE" || echo "TIMESTAMP=$timestamp" >>"$CONFIG_FILE"
 		# get weather data
-		weather=$(curl -A "wesh (https://github.com/camillevuillaume)" -X GET --header "Accept: application.json" "https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=$LATITUDE&lon=$LONGITUDE")
+		curl --silent -A "wesh (https://github.com/camillevuillaume)" -X GET --header "Accept: application.json" "https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=$LATITUDE&lon=$LONGITUDE" -o "$WEATHER_DATA_FILE"
 
 		# get sun data with timezone offset
 		offset_encoded=$(date +%:z | sed 's/+/%2B/g; s/:/%3A/g')
-		sun_data=$(curl -A "wesh (https://github.com/camillevuillaume)" -X GET --header "Accept: application.json" "https://api.met.no/weatherapi/sunrise/3.0/sun?lat=$LATITUDE&lon=$LONGITUDE&offset=$offset_encoded")
+		curl --silent -A "wesh (https://github.com/camillevuillaume)" -X GET --header "Accept: application.json" "https://api.met.no/weatherapi/sunrise/3.0/sun?lat=$LATITUDE&lon=$LONGITUDE&offset=$offset_encoded" -o "$SUN_DATA_FILE"
 
-		# Write weather data to file
-		echo "$weather" >"$WEATHER_DATA_FILE"
-		echo "$sun_data" >"$SUN_DATA_FILE"
 	fi
-}
-
-# Get weather glyph and temperature for status bar (e.g. waybar)
-print_weather_bar() {
-	get_weather
-	weather_data=$(cat "$WEATHER_DATA_FILE")
-	temperature=$(echo "$weather_data" | jq -r '.properties.timeseries[0].data.instant.details."air_temperature"')
-	temperature=$(printf "%.0f" "$temperature")
-	weather_code=$(echo "$weather_data" | jq -r '.properties.timeseries[0].data.next_1_hours.summary.symbol_code' | cut -d'_' -f1)
-	echo "🌡️${temperature}°C $(get_weather_glyph "$weather_code")"
-}
-
-# Print detailed weather for today
-print_weather_today() {
-	get_weather
-  TODAY=$(date +%Y-%m-%d)
-	weather_data=$(cat "$WEATHER_DATA_FILE")
-	sun_data=$(cat "$SUN_DATA_FILE")
-	temperature=$(echo "$weather_data" | jq -r '.properties.timeseries[0].data.instant.details."air_temperature"')
-	humidity=$(echo "$weather_data" | jq -r '.properties.timeseries[0].data.instant.details."relative_humidity"')
-	weather_code=$(echo "$weather_data" | jq -r '.properties.timeseries[0].data.next_1_hours.summary.symbol_code' | cut -d'_' -f1)
-	wind_speed=$(echo "$weather_data" | jq -r '.properties.timeseries[0].data.instant.details."wind_speed"')
-	precipitation=$(echo "$weather_data" | jq -r '.properties.timeseries[0].data.next_1_hours.details."precipitation_amount"')
-	precipitation_6=$(echo "$weather_data" | jq -r '.properties.timeseries[0].data.next_6_hours.details."precipitation_amount"')
-	sunrise=$(echo "$sun_data" | jq -r '.properties.sunrise.time' | cut -d'+' -f1 | cut -d'T' -f2)
-	sunset=$(echo "$sun_data" | jq -r '.properties.sunset.time' | cut -d'+' -f1 | cut -d'T' -f2)
-	max_temp=$(echo "$weather_data" | jq -r --arg today "$TODAY" '[.properties.timeseries[] | select((.time | fromdateiso8601 | strftime("%Y-%m-%d")) == $today) | .data.instant.details.air_temperature] | max // 0')
-	min_temp=$(echo "$weather_data" | jq -r --arg today "$TODAY" '[.properties.timeseries[] | select((.time | fromdateiso8601 | strftime("%Y-%m-%d")) == $today) | .data.instant.details.air_temperature] | min // 0')
-	max_wind=$(echo "$weather_data" | jq -r --arg today "$TODAY" '[.properties.timeseries[] | select((.time | fromdateiso8601 | strftime("%Y-%m-%d")) == $today) | .data.instant.details.wind_speed] | max // 0')
-
-  declare -n code_array=$(get_weather_code "$weather_code")
-	echo "📅 ${TODAY} |"
-	echo "--------------┼--------------------------------"
-	echo "${code_array[0]} | 🌡️ ${temperature}°C (H: ${max_temp}°C L: ${min_temp}°C)"
-	echo "${code_array[1]} | 🌬️ ${wind_speed} m/s (H: ${max_wind} m/s)"
-	echo "${code_array[2]} | ☀️ $(date -d "$sunrise" +%H:%M) 🌙 $(date -d "$sunset" +%H:%M)"
-	echo "${code_array[3]} | 🌧️ ${precipitation}mm (next 6 hours ${precipitation_6}mm)"
-	echo "${code_array[4]} | 💧 humidity ${humidity}%"
 }
 
 # Print detailed weather for a given day
@@ -106,7 +65,7 @@ print_weather_today() {
 # Note that the date must be in the forecast range
 print_weather_day() {
 	get_weather
-  TODAY=$1
+	TODAY=$1
 	weather_data=$(cat "$WEATHER_DATA_FILE")
 	sun_data=$(cat "$SUN_DATA_FILE")
 	temperature=$(echo "$weather_data" | jq -r '.properties.timeseries[0].data.instant.details."air_temperature"')
@@ -124,7 +83,7 @@ print_weather_day() {
 	print_weather "$weather_code" "$temperature" "$max_temp" "$min_temp" "$wind_speed" "$max_wind" "$sunrise" "$sunset" "$precipitation" "$precipitation_6" "$humidity" "$TODAY"
 }
 
-# Print weather summary 
+# Print weather summary
 # Arguments:
 # 1: weather code array name
 # 2: max temperature
@@ -141,11 +100,9 @@ print_weather() {
 	echo "📅 ${10} |"
 	echo "--------------┼--------------------------------"
 	echo "${code_array[0]} | 🌡️ H: ${2}°C L: ${3}°C"
-  echo "${code_array[1]} | 🌬️ H: ${4} m/s L: ${5} m/s"
+	echo "${code_array[1]} | 🌬️ H: ${4} m/s L: ${5} m/s"
 	echo "${code_array[2]} | ☀️ $(date -d "$6" +%H:%M) 🌙 $(date -d "$7" +%H:%M)"
 	echo "${code_array[3]} | 🌧️ ${8}mm"
 	echo "${code_array[4]} | 💧 humidity ${9}%"
 }
 
-# print_weather_bar
-print_weather_today "$(date +%Y-%m-%d)"
