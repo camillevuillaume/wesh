@@ -34,3 +34,4 @@ print_weather_today() {
 }
 
 print_weather_today
+read -s -n 1
