@@ -1,12 +1,14 @@
 #!/bin/bash
 
-source weather.sh
+# Get the directory of the current script
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 
+source "$SCRIPT_DIR"/weather.sh
 
 # Print detailed weather for today
 print_weather_today() {
 	get_weather
-  TODAY=$(date +%Y-%m-%d)
+	TODAY=$(date +%Y-%m-%d)
 	weather_data=$(cat "$WEATHER_DATA_FILE")
 	sun_data=$(cat "$SUN_DATA_FILE")
 	temperature=$(echo "$weather_data" | jq -r '.properties.timeseries[0].data.instant.details."air_temperature"')
@@ -21,7 +23,7 @@ print_weather_today() {
 	min_temp=$(echo "$weather_data" | jq -r --arg today "$TODAY" '[.properties.timeseries[] | select((.time | fromdateiso8601 | strftime("%Y-%m-%d")) == $today) | .data.instant.details.air_temperature] | min // 0')
 	max_wind=$(echo "$weather_data" | jq -r --arg today "$TODAY" '[.properties.timeseries[] | select((.time | fromdateiso8601 | strftime("%Y-%m-%d")) == $today) | .data.instant.details.wind_speed] | max // 0')
 
-  declare -n code_array=$(get_weather_code "$weather_code")
+	declare -n code_array="$(get_weather_code "$weather_code")"
 	echo "📅 ${TODAY} |"
 	echo "--------------┼--------------------------------"
 	echo "${code_array[0]} | 🌡️ ${temperature}°C (H: ${max_temp}°C L: ${min_temp}°C)"

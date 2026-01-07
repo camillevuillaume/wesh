@@ -1,7 +1,9 @@
 #!/bin/bash
 
-source weather.sh
+# Get the directory of the current script
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 
+source "$SCRIPT_DIR"/weather.sh
 
 # Get weather glyph and temperature for status bar (e.g. waybar)
 print_weather_bar() {

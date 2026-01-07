@@ -1,6 +1,9 @@
 #!/bin/bash
 
-source ascii-art.sh
+# Get the directory of the current script
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
+
+source "$SCRIPT_DIR"/ascii-art.sh
 CONFIG_FILE=$HOME/.config/wesh/wesh.conf
 CONFIG_DIR=$HOME/.config/wesh/
 WEATHER_DATA_FILE="$CONFIG_DIR/weather_data.json"
@@ -105,4 +108,3 @@ print_weather() {
 	echo "${code_array[3]} | 🌧️ ${8}mm"
 	echo "${code_array[4]} | 💧 humidity ${9}%"
 }
-
