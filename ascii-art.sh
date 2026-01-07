@@ -236,4 +236,3 @@ get_weather_glyph() {
 	"heavysnow") echo "❄️" ;;
 	esac
 }
-
