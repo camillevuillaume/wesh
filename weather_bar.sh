@@ -30,7 +30,7 @@ print_weather_bar() {
 	# echo "🌧️ ${precipitation}mm (next 6 hours ${precipitation_6}mm)"
 	# echo "💧 humidity ${humidity}%"
 	temperature=$(printf "%.0f" "$temperature")
-	echo "{\"text\": \"🌡️${temperature}°C $(get_weather_glyph "$weather_code")\", \"tooltip\": \"🌡️Temperature H: ${max_temp}°C L: ${min_temp}°C\n☀️ $(date -d "$sunrise" +%H:%M) 🌙 $(date -d "$sunset" +%H:%M)\n🌧️ ${precipitation}mm (next 6 hours ${precipitation_6}mm)\"}"
+	echo "{\"text\": \"🌡️${temperature}°C $(get_weather_glyph "$weather_code")\", \"tooltip\": \"🌡️Temperature 🔥 ${max_temp}°C ❄️ ${min_temp}°C\n☀️ $(date -d "$sunrise" +%H:%M) 🌙 $(date -d "$sunset" +%H:%M)\n🌧️ ${precipitation}mm (next 6 hours ${precipitation_6}mm)\"}"
 }
 
 print_weather_bar
