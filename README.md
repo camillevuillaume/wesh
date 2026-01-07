@@ -1,6 +1,8 @@
 # wesh
 
-Weather forecast from the Linux terminal.
+Weather forecast from the Linux terminal, providing weather information in the status bar, tooltip and detailed forecast over three days.
+
+<img width="1110" height="1073" alt="image" src="https://github.com/user-attachments/assets/04a102a5-3a98-4808-97bc-3e8605ff90cf" />
 
 !NOTE All units are in metric system (Celsius, meters per second, etc.).
 
@@ -44,7 +46,7 @@ Here is an example of a custom module in `modules.jsonc` for waybar and Kitty. I
 
 To open Kitty as a floating window when clicking on the weather module, you can add the following rule to Niri's configuration file (`~/.config/niri/config.toml`):
 
-```toml
+```ini
 window-rule {
     match title="FloatingKitty"
     open-floating true
