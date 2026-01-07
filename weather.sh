@@ -18,11 +18,11 @@ load_config() {
 
 # get location from ip address and write it to config file
 get_location() {
-	if [ ! -d $CONFIG_DIR ]; then
-		mkdir -p $CONFIG_DIR
+	if [ ! -d "$CONFIG_DIR" ]; then
+		mkdir -p "$CONFIG_DIR"
 	fi
-	if [ ! -f $CONFIG_FILE ]; then
-		touch $CONFIG_FILE
+	if [ ! -f "$CONFIG_FILE" ]; then
+		touch "$CONFIG_FILE"
 	fi
 
 	data=$(curl -s "https://ipapi.co/json")
@@ -68,36 +68,49 @@ print_weather_bar() {
 	temperature=$(echo "$weather_data" | jq -r '.properties.timeseries[0].data.instant.details."air_temperature"')
 	temperature=$(printf "%.0f" "$temperature")
 	weather_code=$(echo "$weather_data" | jq -r '.properties.timeseries[0].data.next_1_hours.summary.symbol_code' | cut -d'_' -f1)
-	echo "🌡️${temperature}°C $(get_weather_glyph $weather_code)"
+	echo "🌡️${temperature}°C $(get_weather_glyph "$weather_code")"
 }
 
-print_weather_short() {
+print_weather_today() {
 	get_weather
 	weather_data=$(cat "$WEATHER_DATA_FILE")
 	sun_data=$(cat "$SUN_DATA_FILE")
 	temperature=$(echo "$weather_data" | jq -r '.properties.timeseries[0].data.instant.details."air_temperature"')
-  humidity=$(echo "$weather_data" | jq -r '.properties.timeseries[0].data.instant.details."relative_humidity"')
+	humidity=$(echo "$weather_data" | jq -r '.properties.timeseries[0].data.instant.details."relative_humidity"')
 	weather_code=$(echo "$weather_data" | jq -r '.properties.timeseries[0].data.next_1_hours.summary.symbol_code' | cut -d'_' -f1)
 	wind_speed=$(echo "$weather_data" | jq -r '.properties.timeseries[0].data.instant.details."wind_speed"')
-  precipitation=$(echo "$weather_data" | jq -r '.properties.timeseries[0].data.next_1_hours.details."precipitation_amount"')
-  precipitation_6=$(echo "$weather_data" | jq -r '.properties.timeseries[0].data.next_6_hours.details."precipitation_amount"')
+	precipitation=$(echo "$weather_data" | jq -r '.properties.timeseries[0].data.next_1_hours.details."precipitation_amount"')
+	precipitation_6=$(echo "$weather_data" | jq -r '.properties.timeseries[0].data.next_6_hours.details."precipitation_amount"')
 	sunrise=$(echo "$sun_data" | jq -r '.properties.sunrise.time' | cut -d'+' -f1 | cut -d'T' -f2)
 	sunset=$(echo "$sun_data" | jq -r '.properties.sunset.time' | cut -d'+' -f1 | cut -d'T' -f2)
 	TODAY=$(date +%Y-%m-%d)
 	max_temp=$(echo "$weather_data" | jq -r --arg today "$TODAY" '[.properties.timeseries[] | select((.time | fromdateiso8601 | strftime("%Y-%m-%d")) == $today) | .data.instant.details.air_temperature] | max // 0')
 	min_temp=$(echo "$weather_data" | jq -r --arg today "$TODAY" '[.properties.timeseries[] | select((.time | fromdateiso8601 | strftime("%Y-%m-%d")) == $today) | .data.instant.details.air_temperature] | min // 0')
-  max_wind=$(echo "$weather_data" | jq -r --arg today "$TODAY" '[.properties.timeseries[] | select((.time | fromdateiso8601 | strftime("%Y-%m-%d")) == $today) | .data.instant.details.wind_speed] | max // 0')
+	max_wind=$(echo "$weather_data" | jq -r --arg today "$TODAY" '[.properties.timeseries[] | select((.time | fromdateiso8601 | strftime("%Y-%m-%d")) == $today) | .data.instant.details.wind_speed] | max // 0')
 
-  code_name=$(get_weather_code "$weather_code")
-  declare -n code_array="$code_name"
-  echo "📅 $TODAY |"
-  echo "--------------┼--------------------------------"
-  echo "${code_array[0]} | 🌡️ ${temperature}°C (H: ${max_temp}°C L: ${min_temp}°C)"
-  echo "${code_array[1]} | 🌬️ ${wind_speed} m/s (H: ${max_wind} m/s)"
-  echo "${code_array[2]} | ☀️ $(date -d $sunrise +%H:%M) 🌙 $(date -d $sunset +%H:%M)"
-  echo "${code_array[3]} | 🌧️ ${precipitation}mm (next 6 hours ${precipitation_6}mm)"
-  echo "${code_array[4]} | 💧 humidity ${humidity}%"
+	print_weather_short "$weather_code" "$temperature" "$max_temp" "$min_temp" "$wind_speed" "$max_wind" "$sunrise" "$sunset" "$precipitation" "$precipitation_6" "$humidity" "$TODAY"
+
+	# code_name=$(get_weather_code "$weather_code")
+	# declare -n code_array="$code_name"
+	# echo "📅 $TODAY |"
+	# echo "--------------┼--------------------------------"
+	# echo "${code_array[0]} | 🌡️ ${temperature}°C (H: ${max_temp}°C L: ${min_temp}°C)"
+	# echo "${code_array[1]} | 🌬️ ${wind_speed} m/s (H: ${max_wind} m/s)"
+	# echo "${code_array[2]} | ☀️ $(date -d $sunrise +%H:%M) 🌙 $(date -d $sunset +%H:%M)"
+	# echo "${code_array[3]} | 🌧️ ${precipitation}mm (next 6 hours ${precipitation_6}mm)"
+	# echo "${code_array[4]} | 💧 humidity ${humidity}%"
 }
 
-print_weather_bar
-print_weather_short
+print_weather_short() {
+	declare -n code_array="$1"
+	echo "📅 ${12} |"
+	echo "--------------┼--------------------------------"
+	echo "${code_array[0]} | 🌡️ ${2}°C (H: ${3}°C L: ${4}°C)"
+	echo "${code_array[1]} | 🌬️ ${5} m/s (H: ${6} m/s)"
+	echo "${code_array[2]} | ☀️ $(date -d "$7" +%H:%M) 🌙 $(date -d "$8" +%H:%M)"
+	echo "${code_array[3]} | 🌧️ ${9}mm (next 6 hours ${10}mm)"
+	echo "${code_array[4]} | 💧 humidity ${11}%"
+}
+
+# print_weather_bar
+# print_weather_today
