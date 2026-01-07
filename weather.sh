@@ -8,6 +8,8 @@ CONFIG_FILE=$HOME/.config/wesh/wesh.conf
 CONFIG_DIR=$HOME/.config/wesh/
 WEATHER_DATA_FILE="$CONFIG_DIR/weather_data.json"
 SUN_DATA_FILE="$CONFIG_DIR/sun_data.json"
+SUN1_DATA_FILE="$CONFIG_DIR/sun1_data.json"
+SUN2_DATA_FILE="$CONFIG_DIR/sun2_data.json"
 
 #load config file
 load_config() {
@@ -49,16 +51,23 @@ get_weather() {
 
 	# check if data is older than 1 hour or files do not exist
 	timestamp=$(date +%s)
-	if [[ -z "$TIMESTAMP" || $((timestamp - TIMESTAMP)) -gt 3600 || ! -f $WEATHER_DATA_FILE || ! -f $SUN_DATA_FILE ]]; then
+	if [[ -z "$TIMESTAMP" || $((timestamp - TIMESTAMP)) -gt 3600 || ! -f $WEATHER_DATA_FILE || ! -f $SUN_DATA_FILE || ! -f $SUN1_DATA_FILE || ! -f $SUN2_DATA_FILE ]]; then
 		# Update or append TIMESTAMP
 		grep -q "^TIMESTAMP=" "$CONFIG_FILE" && sed -i "s/^TIMESTAMP=.*/TIMESTAMP=$timestamp/" "$CONFIG_FILE" || echo "TIMESTAMP=$timestamp" >>"$CONFIG_FILE"
 		# get weather data
-		curl --silent -A "wesh (https://github.com/camillevuillaume)" -X GET --header "Accept: application.json" "https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=$LATITUDE&lon=$LONGITUDE" -o "$WEATHER_DATA_FILE"
+		curl --silent -A "wesh (https://github.com/camillevuillaume/wesh)" -X GET --header "Accept: application.json" "https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=$LATITUDE&lon=$LONGITUDE" -o "$WEATHER_DATA_FILE"
 
-		# get sun data with timezone offset
-		offset_encoded=$(date +%:z | sed 's/+/%2B/g; s/:/%3A/g')
-		curl --silent -A "wesh (https://github.com/camillevuillaume)" -X GET --header "Accept: application.json" "https://api.met.no/weatherapi/sunrise/3.0/sun?lat=$LATITUDE&lon=$LONGITUDE&offset=$offset_encoded" -o "$SUN_DATA_FILE"
-
+		# download sun data once a day only - compare time stamp with yesterday midnight
+		if [[ $TIMESTAMP -gt $(date -d "yesterday 00:00" +%s) || ! -f $SUN_DATA_FILE || ! -f $SUN1_DATA_FILE || ! -f $SUN2_DATA_FILE ]]; then
+			# get sun data with timezone offset
+			today=$(date +%Y-%m-%d)
+			offset_encoded=$(date +%:z | sed 's/+/%2B/g; s/:/%3A/g')
+			curl --silent -A "wesh (https://github.com/camillevuillaume/wesh)" -X GET --header "Accept: application.json" "https://api.met.no/weatherapi/sunrise/3.0/sun?date=$today&lat=$LATITUDE&lon=$LONGITUDE&offset=$offset_encoded" -o "$SUN_DATA_FILE"
+			tomorrow=$(date -d "+1 day" +%Y-%m-%d)
+			curl --silent -A "wesh (https://github.com/camillevuillaume/wesh)" -X GET --header "Accept: application.json" "https://api.met.no/weatherapi/sunrise/3.0/sun?date=$tomorrow&lat=$LATITUDE&lon=$LONGITUDE&offset=$offset_encoded" -o "$SUN1_DATA_FILE"
+			day_after_tomorrow=$(date -d "+2 days" +%Y-%m-%d)
+			curl --silent -A "wesh (https://github.com/camillevuillaume/wesh)" -X GET --header "Accept: application.json" "https://api.met.no/weatherapi/sunrise/3.0/sun?date=$day_after_tomorrow&lat=$LATITUDE&lon=$LONGITUDE&offset=$offset_encoded" -o "$SUN2_DATA_FILE"
+		fi
 	fi
 }
 
