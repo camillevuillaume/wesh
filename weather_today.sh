@@ -1,5 +1,7 @@
 #!/bin/bash
 
+PRECIPITATION_HOURS=6
+
 # Get the directory of the current script
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 
@@ -24,7 +26,7 @@ print_weather_today() {
 	max_wind=$(echo "$weather_data" | jq -r --arg today "$TODAY" '[.properties.timeseries[] | select((.time | fromdateiso8601 | strftime("%Y-%m-%d")) == $today) | .data.instant.details.wind_speed] | max // 0')
 
 	declare -n code_array="$(get_weather_code "$weather_code")"
-	echo "    TODAY     | 📅 ${TODAY} "
+	echo "    TODAY     |      📅 ${TODAY} "
 	echo "--------------┼-------------------------------"
 	echo "${code_array[0]} | 🌡️ ${temperature}°C (🔥 ${max_temp}°C ❄️ ${min_temp}°C)"
 	echo "${code_array[1]} | 🌬️ ${wind_speed} m/s (H: ${max_wind} m/s)"
@@ -61,7 +63,7 @@ print_precipitations() {
     hour_end=23
   fi
   weather_data=$(cat "$WEATHER_DATA_FILE")
-  echo "🕐 Time       | 🌧️ Precipitation (mm)"
+  echo "   🕐 Time    |   🌧️ Precipitation (mm)"
   echo "--------------┼-------------------------------"
   for hour in $(seq "$hour_start" "$hour_end"); do
     time_slot=$(date -d "${TODAY} ${hour}:00" +%Y-%m-%dT%H:%M:%SZ)
@@ -126,7 +128,7 @@ print_weather_next() {
 
 print_weather_today
 echo 
-print_precipitations 6
+print_precipitations $PRECIPITATION_HOURS
 echo
 print_weather_next tomorrow
 echo
