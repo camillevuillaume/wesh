@@ -71,7 +71,7 @@ print_precipitations() {
     # printf "%s | %.2f\n" "$(date -d "$time_slot" +%H:%M)" "$precipitation"
     precipitation=$(printf "%.1f" "$precipitation")
     intensity_bar=$(print_precipitation_intensity "$precipitation")
-    echo "   "$hour":00      | "$precipitation"mm "$intensity_bar""
+    printf "   %02d:00      | %smm %s\n" "$hour" "$precipitation" "$intensity_bar"
     # echo "DEBUG: time_slot=$time_slot" >&2
     # echo "DEBUG: precipitation=$precipitation" >&2
   done

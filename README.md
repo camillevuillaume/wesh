@@ -2,6 +2,8 @@
 
 Weather forecast from the Linux terminal.
 
+!NOTE All units are in metric system (Celsius, meters per second, etc.).
+
 ## Dependencies
 
 This has only been tested on Linux. You will need the following dependencies:
