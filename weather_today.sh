@@ -58,6 +58,7 @@ print_precipitations() {
   get_weather
   TODAY=$(date +%Y-%m-%d)
   hour_start=$(date +%H)
+  hour_start=$((10#$hour_start))
   hour_end=$((hour_start + $1))
   if [ "$hour_end" -gt 23 ]; then
     hour_end=23
